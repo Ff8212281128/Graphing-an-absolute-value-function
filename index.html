@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>آزمایشگاه تعاملی توابع قدر مطلقی</title>
+
+<script src="https://cdn.geogebra.org/apps/deployggb.js"></script>
+<script defer src="https://unpkg.com/mathlive"></script>
+
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --text: #1e293b;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #14b8a6 0%, #6366f1 55%, #8b5cf6 100%);
+    background-attachment: fixed;
+  }
+
+  header {
+    padding: 12px 24px;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,.4);
+  }
+  header h1 { font-size: 1.35rem; font-weight: 700; }
+  header p  { font-size: .88rem; opacity: .95; margin-top: 2px; }
+
+  .app-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px 16px;
+    gap: 10px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* ================= input panel ================= */
+  .input-panel {
+    position: relative;
+    z-index: 30;
+    background: linear-gradient(135deg, rgba(37,99,235,.94), rgba(59,130,246,.88));
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255,255,255,.55);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.35);
+    padding: 12px 16px;
+    color: #fff;
+  }
+  .input-panel .prompt-text {
+    font-weight: 700;
+    font-size: .98rem;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .input-row { display: flex; align-items: stretch; gap: 8px; }
+
+  math-field {
+    flex: 1;
+    min-height: 50px;
+    font-size: 1.2rem;
+    padding: 6px 12px;
+    border: 2px solid rgba(255,255,255,.7);
+    border-radius: 12px;
+    background: #ffffff;
+    color: var(--text);
+    outline: none;
+  }
+  math-field:focus-within {
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 3px rgba(251,191,36,.4);
+  }
+
+  .btn-plot {
+    flex: 0 0 auto;
+    padding: 0 20px;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #78350f;
+    cursor: pointer;
+    transition: transform .12s, box-shadow .2s;
+    box-shadow: 0 4px 14px rgba(245,158,11,.5);
+    white-space: nowrap;
+  }
+  .btn-plot:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245,158,11,.65); }
+  .btn-plot:active { transform: translateY(0); }
+
+  .drawer-toggle {
+    flex: 0 0 auto;
+    width: 50px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.22);
+    color: #fff;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255,255,255,.55);
+    transition: background .2s;
+  }
+  .drawer-toggle:hover { background: rgba(255,255,255,.4); }
+
+  .drawer {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0; left: 0;
+    background: #fff;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    box-shadow: 0 16px 40px rgba(0,0,0,.35);
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height .35s ease, opacity .25s ease;
+    z-index: 999;
+    color: var(--text);
+  }
+  .drawer.open { max-height: 520px; overflow-y: auto; opacity: 1; }
+  .drawer-inner { padding: 8px; }
+  .drawer-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: .93rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .15s;
+  }
+  .drawer-item:hover { background: #eff6ff; color: var(--primary-dark); }
+  .drawer-item:last-child { border-bottom: none; }
+
+  /* ================= toolbar ================= */
+  .toolbar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(37,99,235,.94), rgba(59,130,246,.88));
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255,255,255,.55);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .tool-group { display: flex; gap: 5px; align-items: center; padding: 2px 8px; }
+  .tool-group + .tool-group { border-right: 2px solid rgba(255,255,255,.35); }
+
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: .85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .12s, box-shadow .15s, background .2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.18);
+    white-space: nowrap;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.28); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-abs  { background: #fef3c7; color: #92400e; }
+  .btn-absx { background: #ede9fe; color: #5b21b6; }
+  .btn-plus { background: #10b981; color: #fff; min-width: 40px; font-size: 1.1rem; padding: 6px 10px; }
+  .btn-minus{ background: #ef4444; color: #fff; min-width: 40px; font-size: 1.1rem; padding: 6px 10px; }
+
+  .dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 34px);
+    grid-template-rows: repeat(3, 34px);
+    gap: 2px;
+  }
+  .dpad button {
+    border: none;
+    border-radius: 6px;
+    background: rgba(255,255,255,.9);
+    font-size: .95rem;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    padding: 0;
+  }
+  .dpad button:hover { background: #fbbf24; }
+  .dpad button:active { transform: scale(.9); }
+  .dpad .up    { grid-area: 1 / 2; }
+  .dpad .left  { grid-area: 2 / 1; }
+  .dpad .right { grid-area: 2 / 3; }
+  .dpad .down  { grid-area: 3 / 2; }
+  .dpad .center {
+    grid-area: 2 / 2;
+    background: transparent;
+    box-shadow: none;
+    color: #fff;
+    font-size: .55rem;
+    font-weight: 700;
+    cursor: default;
+    text-shadow: 0 1px 3px rgba(0,0,0,.5);
+  }
+  .dpad .center:hover { background: transparent; }
+
+  /* ================= combine panel (inline, زیر toolbar) ================= */
+  .combine-panel {
+    position: relative;
+    z-index: 25;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    padding: 0 16px;
+    background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(139,92,246,.9));
+    backdrop-filter: blur(8px);
+    border: 0 solid rgba(255,255,255,.6);
+    border-radius: var(--radius);
+    color: #fff;
+    transition: max-height .35s ease, opacity .3s ease, padding .3s ease, border-width .2s;
+    box-shadow: 0 10px 30px rgba(0,0,0,.28);
+  }
+  .combine-panel.visible {
+    max-height: 320px;
+    overflow: visible;
+    opacity: 1;
+    padding: 12px 16px;
+    border-width: 2px;
+  }
+
+  .combine-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: .95rem;
+    margin-bottom: 10px;
+  }
+  .op-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; height: 30px;
+    background: #fbbf24;
+    color: #78350f;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+
+  .combine-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .combine-row .target-label {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0 6px;
+    color: #fde68a;
+  }
+  .combine-row math-field {
+    min-height: 44px;
+    font-size: 1.1rem;
+  }
+  .combine-row .drawer-toggle {
+    width: 44px;
+    font-size: 1.2rem;
+  }
+  .combine-drawer {
+    position: absolute;
+    top: 100%;
+    right: 12px; left: 12px;
+    background: #fff;
+    border: 2px solid #7c3aed;
+    border-radius: var(--radius);
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height .35s, opacity .25s;
+    color: var(--text);
+    z-index: 1000;
+    box-shadow: 0 16px 40px rgba(0,0,0,.3);
+  }
+  .combine-drawer.open { max-height: 400px; overflow-y: auto; opacity: 1; }
+
+  .target-selector {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: .85rem;
+    flex-wrap: wrap;
+  }
+  .target-selector > span { opacity: .9; }
+  .btn-target {
+    padding: 6px 14px;
+    border: 2px solid rgba(255,255,255,.6);
+    background: rgba(255,255,255,.2);
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .85rem;
+    font-family: 'Courier New', monospace;
+    transition: all .15s;
+  }
+  .btn-target.active {
+    background: #fbbf24;
+    color: #78350f;
+    border-color: #fbbf24;
+    box-shadow: 0 3px 10px rgba(251,191,36,.5);
+  }
+
+  .combine-actions {
+    display: flex;
+    gap: 8px;
+    margin-right: auto;
+  }
+  .btn-cancel-c {
+    background: rgba(255,255,255,.25);
+    color: #fff;
+    padding: 8px 16px;
+    font-size: .88rem;
+  }
+  .btn-confirm-c {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    padding: 8px 18px;
+    font-size: .9rem;
+    font-weight: 700;
+  }
+  .btn-confirm-c:hover { box-shadow: 0 4px 14px rgba(16,185,129,.6); }
+
+  .combine-hint {
+    font-size: .78rem;
+    opacity: .9;
+    margin-top: 6px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* ================= plot ================= */
+  .plot-panel {
+    flex: 1;
+    min-height: 460px;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: 0 12px 40px rgba(0,0,0,.35), 0 0 0 3px rgba(255,255,255,.35);
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    border: 2px solid var(--primary);
+  }
+  #ggb-container { width: 100%; height: 100%; min-height: 460px; }
+
+  .formula-label {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(255,255,255,.94);
+    border: 2px solid var(--primary);
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: .85rem;
+    box-shadow: 0 3px 10px rgba(0,0,0,.2);
+    z-index: 5;
+    color: #1e293b;
+    direction: ltr;
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ================= num modal ================= */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s;
+    padding: 12px;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: linear-gradient(135deg, rgba(37,99,235,.97), rgba(59,130,246,.95));
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,.65);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 60px rgba(0,0,0,.45);
+    padding: 20px 22px;
+    width: min(420px, 96vw);
+    color: #fff;
+    transform: translateY(16px);
+    transition: transform .25s;
+  }
+  .modal-overlay.show .modal { transform: translateY(0); }
+  .modal h3 { font-size: 1rem; margin-bottom: 12px; }
+  .modal input[type="number"] {
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 1.15rem;
+    border: 2px solid rgba(255,255,255,.7);
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 14px;
+    direction: ltr;
+  }
+  .modal input[type="number"]:focus { border-color: #fbbf24; outline: none; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-cancel { background: rgba(255,255,255,.28); color: #fff; }
+  .btn-confirm { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #78350f; }
+
+  .toast {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e293b;
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-size: .88rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s, transform .3s;
+    z-index: 600;
+    max-width: 90vw;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 750px) {
+    header h1 { font-size: 1.05rem; }
+    header p  { font-size: .78rem; }
+    .app-wrapper { padding: 8px; gap: 8px; }
+    .toolbar { gap: 4px; padding: 6px 8px; }
+    .tool-group { padding: 2px 5px; }
+    .btn { padding: 6px 9px; font-size: .78rem; }
+    .dpad { grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(3, 30px); }
+    .dpad button { font-size: .85rem; }
+    .plot-panel { min-height: 300px; }
+    #ggb-container { min-height: 300px; }
+    .input-row { flex-wrap: wrap; }
+    .btn-plot { padding: 0 12px; }
+    .drawer-toggle { width: 44px; font-size: 1.2rem; }
+    .formula-label { font-size: .72rem; padding: 4px 8px; }
+    .combine-actions { width: 100%; justify-content: flex-end; margin-right: 0; margin-top: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📐 آزمایشگاه تعاملی توابع قدر مطلقی</h1>
+  <p>پایه یازدهم ریاضی — حسابان</p>
+</header>
+
+<div class="app-wrapper">
+
+  <!-- ورودی f -->
+  <div class="input-panel" id="inputPanel">
+    <div class="prompt-text">📝 ضابطه یک تابع را وارد کن یا از کشو پایین انتخاب کن</div>
+    <div class="input-row">
+      <math-field id="mathInput"
+                  math-virtual-keyboard-policy="manual"
+                  virtual-keyboard-mode="manual"
+                  placeholder="مثلاً: x^2 - 3x + 2"></math-field>
+      <button class="btn-plot" id="btnPlot">رسم ▶</button>
+      <button class="drawer-toggle" id="drawerToggle" title="باز کردن کشو">☰</button>
+    </div>
+    <div class="drawer" id="drawer">
+      <div class="drawer-inner" id="drawerList"></div>
+    </div>
+  </div>
+
+  <!-- toolbar -->
+  <div class="toolbar">
+    <div class="tool-group">
+      <button class="btn btn-abs" id="btnAbsF" title="قدر مطلق تابع">|f(x)|</button>
+    </div>
+    <div class="tool-group">
+      <button class="btn btn-absx" id="btnFAbsX" title="تابع با x قدر مطلق">f(|x|)</button>
+    </div>
+    <div class="tool-group">
+      <div class="dpad">
+        <button class="up"    data-dir="up">▲</button>
+        <button class="left"  data-dir="left">◀</button>
+        <span class="center">انتقال</span>
+        <button class="right" data-dir="right">▶</button>
+        <button class="down"  data-dir="down">▼</button>
+      </div>
+    </div>
+    <div class="tool-group">
+      <button class="btn btn-plus"  id="btnPlus"  title="جمع دو تابع">＋</button>
+      <button class="btn btn-minus" id="btnMinus" title="تفریق دو تابع">－</button>
+    </div>
+  </div>
+
+  <!-- پنل ترکیب دو تابع (inline) -->
+  <div class="combine-panel" id="combinePanel">
+    <div class="combine-header">
+      <span>🔗 حالت ترکیب دو تابع</span>
+      <span class="op-badge" id="combineOpBadge">+</span>
+    </div>
+
+    <div class="combine-row">
+      <span class="target-label">g(x) =</span>
+      <math-field id="gMathInput"
+                  math-virtual-keyboard-policy="manual"
+                  virtual-keyboard-mode="manual"
+                  placeholder="تابع دوم را وارد کنید..."></math-field>
+      <button class="drawer-toggle" id="gDrawerToggle" title="لیست توابع">☰</button>
+    </div>
+
+    <div class="combine-row">
+      <div class="target-selector">
+        <span>عملیات روی:</span>
+        <button class="btn-target active" data-target="f">f(x)</button>
+        <button class="btn-target" data-target="g">g(x)</button>
+      </div>
+      <div class="combine-actions">
+        <button class="btn btn-cancel-c" id="combineCancel">لغو</button>
+        <button class="btn btn-confirm-c" id="combineConfirm">✓ تأیید و رسم حاصل</button>
+      </div>
+    </div>
+
+    <div class="combine-hint">
+      💡 با کلیک روی نمودار یا دکمه‌های f(x)/g(x) تابع مورد نظر را انتخاب کنید؛ سپس انتقال یا قدر مطلق را اعمال کنید.
+    </div>
+
+    <div class="combine-drawer" id="gDrawer">
+      <div class="drawer-inner" id="gDrawerList"></div>
+    </div>
+  </div>
+
+  <!-- plot -->
+  <div class="plot-panel">
+    <div id="ggb-container"></div>
+    <div class="formula-label" id="formulaLabel">f(x) = ?</div>
+  </div>
+</div>
+
+<!-- مودال عدد (انتقال) -->
+<div class="modal-overlay" id="numModal">
+  <div class="modal">
+    <h3 id="numModalTitle">میزان انتقال؟</h3>
+    <input type="number" id="numModalInput" value="1" step="any">
+    <div class="modal-actions">
+      <button class="btn btn-cancel"  id="numModalCancel">لغو</button>
+      <button class="btn btn-confirm" id="numModalConfirm">تأیید</button>
+    </div>
+  </div>
+</div>
+
+<math-virtual-keyboard></math-virtual-keyboard>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   GeoGebra
+   ============================================================ */
+const ggbApp = new GGBApplet({
+  appName: 'graphing',
+  width: 800, height: 500,
+  showToolBar: false,
+  showAlgebraInput: false,
+  showMenuBar: false,
+  showResetIcon: true,
+  enableLabelDrags: false,
+  enableShiftDragZoom: true,
+  enableRightClick: true,
+  errorDialogsActive: false,
+  useBrowserForJS: true,
+  language: 'fa',
+  appletOnLoad: function (api) {
+    window.ggb = api;
+    initApp();
+  }
+}, true);
+
+window.addEventListener('load', async () => {
+  ggbApp.inject('ggb-container');
+  await setupAllMathFields();
+});
+
+/* ============================================================
+   State
+   ============================================================ */
+const state = {
+  mode: 'normal',       // 'normal' | 'combine'
+  fExpr: null,
+  gExpr: null,
+  combineOp: '+',
+  selectedTarget: 'f',
+  combineOrigF: null,
+  hasFunction: false,
+  ggbReady: false,
+};
+
+/* ============================================================
+   MathLive Keyboard — راه‌اندازی چندلایه
+   ============================================================ */
+function showVirtualKeyboard() {
+  const vk = window.mathVirtualKeyboard ||
+             (window.MathLive && window.MathLive.mathVirtualKeyboard);
+  if (vk && typeof vk.show === 'function') {
+    try { vk.show(); return true; } catch (e) { /* ignore */ }
+  }
+  return false;
+}
+
+function hideVirtualKeyboard() {
+  const vk = window.mathVirtualKeyboard ||
+             (window.MathLive && window.MathLive.mathVirtualKeyboard);
+  if (vk && typeof vk.hide === 'function') {
+    try { vk.hide(); } catch (e) { /* ignore */ }
+  }
+}
+
+async function setupAllMathFields() {
+  // صبر می‌کنیم MathLive کامل لود شود
+  if (window.customElements) {
+    try {
+      await window.customElements.whenDefined('math-field');
+      await window.customElements.whenDefined('math-virtual-keyboard');
+    } catch (e) { /* ignore */ }
+  }
+
+  document.querySelectorAll('math-field').forEach(mf => {
+    // مقداردهی خاصیت‌ها (هم جدید هم قدیمی)
+    try { mf.mathVirtualKeyboardPolicy = 'manual'; } catch (e) {}
+    try { mf.virtualKeyboardMode = 'onfocus'; } catch (e) {}
+    mf.setAttribute('math-virtual-keyboard-policy', 'manual');
+    mf.setAttribute('virtual-keyboard-mode', 'onfocus');
+
+    // نشان دادن کیبورد با فوکوس/کلیک — چند بار تلاش
+    const trigger = () => {
+      showVirtualKeyboard();
+      setTimeout(showVirtualKeyboard, 50);
+      setTimeout(showVirtualKeyboard, 200);
+      setTimeout(showVirtualKeyboard, 500);
+    };
+    mf.addEventListener('focus', trigger);
+    mf.addEventListener('click', trigger);
+    mf.addEventListener('pointerup', trigger);
+  });
+}
+
+/* ============================================================
+   توابع کمکی
+   ============================================================ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function readMath(field) {
+  if (!field) return '';
+  try {
+    if (typeof field.getValue === 'function') {
+      const v = field.getValue('ascii-math');
+      if (v && v.trim()) return v.trim();
+    }
+  } catch (e) {}
+  try {
+    if (typeof field.getValue === 'function') {
+      const v2 = field.getValue();
+      if (v2 && v2.trim()) return v2.trim();
+    }
+  } catch (e) {}
+  return (field.value || '').trim();
+}
+
+function writeMath(field, ascii) {
+  if (!field) return;
+  try {
+    if (typeof field.setValue === 'function') {
+      field.setValue(ascii, { format: 'ascii-math' });
+      return;
+    }
+  } catch (e) {}
+  field.value = ascii;
+}
+
+function substituteX(expr, replacement) {
+  return expr.replace(/(?<![a-zA-Z_])x(?![a-zA-Z_])/g, replacement);
+}
+
+function updateFormulaLabel() {
+  const l = document.getElementById('formulaLabel');
+  if (!l) return;
+  let txt = 'f(x) = ' + (state.fExpr || '?');
+  if (state.mode === 'combine' && state.gExpr) {
+    txt += '   ,   g(x) = ' + state.gExpr;
+  }
+  l.textContent = txt;
+}
+
+function animateValue(name, from, to, duration, cb) {
+  const steps = 25;
+  let i = 0;
+  const dt = duration / steps;
+  const timer = setInterval(() => {
+    i++;
+    const v = from + (to - from) * (i / steps);
+    try { window.ggb.evalCommand(`SetValue(${name}, ${v})`); } catch (e) {}
+    if (i >= steps) { clearInterval(timer); if (cb) cb(); }
+  }, dt);
+}
+
+/* ============================================================
+   initApp
+   ============================================================ */
+function initApp() {
+  state.ggbReady = true;
+  const ggb = window.ggb;
+  try {
+    ggb.setAxesVisible(true, true);
+    ggb.setGridVisible(true);
+    ggb.setCoordSystem(-10, 10, -10, 10);
+  } catch (e) {}
+
+  buildDrawer('drawerList', 'drawer', (expr) => {
+    writeMath(document.getElementById('mathInput'), expr);
+    plotFunction(expr);
+  });
+  buildDrawer('gDrawerList', 'gDrawer', (expr) => {
+    const inp = document.getElementById('gMathInput');
+    writeMath(inp, expr);
+    document.getElementById('gDrawer').classList.remove('open');
+    const evt = new Event('input', { bubbles: true });
+    inp.dispatchEvent(evt);
+  });
+
+  // کلیک روی نمودار برای انتخاب
+  try {
+    ggb.registerClientListener((event) => {
+      try {
+        const e = typeof event === 'string' ? JSON.parse(event) : event;
+        if (e.type === 'click' && e.target && state.mode === 'combine') {
+          if (e.target === 'f' || e.target === 'g') selectTarget(e.target);
+        }
+      } catch (err) {}
+    });
+  } catch (e) {}
+
+  bindEvents();
+  setTimeout(() => plotFunction('x'), 300);
+}
+
+/* ============================================================
+   لیست توابع
+   ============================================================ */
+const functionList = [
+  { label: 'تابع ثابت  f(x)=c',                     expr: '1',        icon: '➖' },
+  { label: 'تابع درجه اول گذرنده از (0,0)  f(x)=x',  expr: 'x',        icon: '📈' },
+  { label: 'تابع درجه دوم گذرنده از (0,0)  f(x)=x²', expr: 'x^2',      icon: '📉' },
+  { label: 'تابع درجه سوم گذرنده از (0,0)  f(x)=x³', expr: 'x^3',      icon: '📊' },
+  { label: 'تابع سینوس  f(x)=sin(x)',                expr: 'sin(x)',   icon: '〰️' },
+  { label: 'تابع کسینوس  f(x)=cos(x)',               expr: 'cos(x)',   icon: '🌊' },
+  { label: 'تابع تانژانت  f(x)=tan(x)',              expr: 'tan(x)',   icon: '📐' },
+  { label: 'تابع کتانژانت  f(x)=cot(x)',             expr: 'cot(x)',   icon: '📏' },
+  { label: 'تابع سکانت  f(x)=sec(x)',                expr: 'sec(x)',   icon: '🔆' },
+  { label: 'تابع کسکانت  f(x)=csc(x)',               expr: 'csc(x)',   icon: '🔅' },
+  { label: 'تابع لگاریتم  f(x)=log(x)',              expr: 'log(x)',   icon: '🔢' },
+  { label: 'تابع لگاریتم طبیعی  f(x)=ln(x)',         expr: 'ln(x)',    icon: '📗' },
+  { label: 'تابع نمایی  f(x)=eˣ',                    expr: 'e^x',      icon: '🚀' },
+  { label: 'تابع جزء صحیح  f(x)=⌊x⌋',                expr: 'floor(x)', icon: '🔲' },
+  { label: 'تابع رادیکالی  f(x)=√x',                 expr: 'sqrt(x)',  icon: '√' },
+  { label: 'تابع گویا  f(x)=1/x',                    expr: '1/x',      icon: '➗' },
+];
+
+function buildDrawer(listId, drawerId, onSelect) {
+  const list = document.getElementById(listId);
+  if (!list) return;
+  list.innerHTML = '';
+  functionList.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'drawer-item';
+    div.innerHTML = `<span>${item.icon}</span><span>${item.label}</span>`;
+    div.addEventListener('click', () => {
+      document.getElementById(drawerId).classList.remove('open');
+      onSelect(item.expr);
+    });
+    list.appendChild(div);
+  });
+}
+
+/* ============================================================
+   پاک‌سازی
+   ============================================================ */
+function clearAll() {
+  const ggb = window.ggb;
+  if (!ggb) return;
+  ['f', 'g', 'f_orig', 'g_orig', 'f_anim', 'g_anim',
+   'f_s', 'g_s', 'comb'].forEach(n => {
+    try { ggb.evalCommand(`Delete[${n}]`); } catch (e) {}
+  });
+}
+
+/* ============================================================
+   رسم تابع اصلی f
+   ============================================================ */
+function plotFunction(expr) {
+  if (!state.ggbReady) { setTimeout(() => plotFunction(expr), 400); return; }
+  if (!expr || !expr.trim()) { showToast('لطفاً یک عبارت وارد کنید'); return; }
+
+  // اگر در حالت ترکیب بودیم، خارج شو
+  if (state.mode === 'combine') exitCombineMode(true);
+
+  const ggb = window.ggb;
+  clearAll();
+  state.fExpr = expr;
+  state.gExpr = null;
+  state.hasFunction = true;
+
+  try {
+    ggb.evalCommand(`f(x) = ${expr}`);
+  } catch (e) {
+    showToast('عبارت معتبر نیست: ' + e.message);
+    return;
+  }
+  ggb.setColor('f', 37, 99, 235);
+  ggb.setLineThickness('f', 4);
+  ggb.setLineStyle('f', 0);
+  ggb.setVisible('f', true);
+  try { ggb.setCoordSystem(-10, 10, -10, 10); } catch (e) {}
+
+  updateFormulaLabel();
+  showToast(`f(x) = ${expr}  رسم شد`);
+}
+
+/* ============================================================
+   رسم مجدد یک تابع مشخص (f یا g) از state
+   ============================================================ */
+function redrawTarget(target) {
+  const ggb = window.ggb;
+  const expr = target === 'f' ? state.fExpr : state.gExpr;
+  if (!expr) return;
+
+  try { ggb.evalCommand(`Delete[${target}]`); } catch (e) {}
+  try { ggb.evalCommand(`${target}(x) = ${expr}`); } catch (e) {
+    showToast('خطا در رسم: ' + e.message);
+    return;
+  }
+  const color = target === 'f' ? [37, 99, 235] : [220, 38, 38];
+  const thickness = state.mode === 'combine'
+    ? (state.selectedTarget === target ? 6 : 3)
+    : 4;
+  ggb.setColor(target, ...color);
+  ggb.setLineThickness(target, thickness);
+  ggb.setLineStyle(target, 0);
+  ggb.setVisible(target, true);
+}
+
+/* ============================================================
+   حالت ترکیب
+   ============================================================ */
+function startCombine(mode) {
+  if (!state.hasFunction) { showToast('ابتدا یک تابع رسم کنید'); return; }
+  if (state.mode === 'combine') { showToast('قبلاً در حالت ترکیب هستید'); return; }
+
+  state.mode = 'combine';
+  state.combineOp = mode === 'plus' ? '+' : '-';
+  state.combineOrigF = state.fExpr;
+  state.gExpr = null;
+  state.selectedTarget = 'f';
+
+  const panel = document.getElementById('combinePanel');
+  panel.classList.add('visible');
+  document.getElementById('combineOpBadge').textContent = state.combineOp;
+
+  const gInp = document.getElementById('gMathInput');
+  writeMath(gInp, '');
+
+  selectTarget('f');
+  updateFormulaLabel();
+
+  // فوکوس و نمایش کیبورد — با تأخیر تا پنل واقعاً نمایش داده شود
+  setTimeout(() => {
+    try { gInp.focus(); } catch (e) {}
+    showVirtualKeyboard();
+    setTimeout(showVirtualKeyboard, 150);
+    setTimeout(showVirtualKeyboard, 400);
+  }, 350);
+
+  showToast('تابع دوم g(x) را وارد یا از کشو انتخاب کنید');
+}
+
+function exitCombineMode(silent) {
+  state.mode = 'normal';
+  state.gExpr = null;
+  state.combineOrigF = null;
+  document.getElementById('combinePanel').classList.remove('visible');
+  hideVirtualKeyboard();
+  if (!silent) showToast('حالت ترکیب بسته شد');
+}
+
+function selectTarget(target) {
+  if (state.mode !== 'combine') return;
+  state.selectedTarget = target;
+
+  document.querySelectorAll('.btn-target').forEach(b => {
+    b.classList.toggle('active', b.dataset.target === target);
+  });
+
+  const ggb = window.ggb;
+  if (!ggb) return;
+  try {
+    if (ggb.exists('f')) {
+      ggb.setLineThickness('f', target === 'f' ? 6 : 3);
+    }
+    if (ggb.exists('g')) {
+      ggb.setLineThickness('g', target === 'g' ? 6 : 3);
+    }
+  } catch (e) {}
+}
+
+function cancelCombine() {
+  // بازگرداندن f به حالت اولیه
+  if (state.combineOrigF !== null) {
+    state.fExpr = state.combineOrigF;
+    try { window.ggb.evalCommand('Delete[f]'); } catch (e) {}
+    try { window.ggb.evalCommand(`f(x) = ${state.fExpr}`); } catch (e) {}
+    try {
+      window.ggb.setColor('f', 37, 99, 235);
+      window.ggb.setLineThickness('f', 4);
+      window.ggb.setVisible('f', true);
+    } catch (e) {}
+  }
+
+  // پاک کردن g
+  ['g', 'g_orig', 'g_anim', 'g_s'].forEach(n => {
+    try { window.ggb.evalCommand(`Delete[${n}]`); } catch (e) {}
+  });
+
+  exitCombineMode(true);
+  updateFormulaLabel();
+  showToast('ترکیب لغو شد');
+}
+
+function confirmCombine() {
+  if (!state.gExpr || !state.gExpr.trim()) {
+    showToast('ابتدا تابع دوم g(x) را وارد کنید');
+    return;
+  }
+  const newExpr = `(${state.fExpr}) ${state.combineOp} (${state.gExpr})`;
+
+  const ggb = window.ggb;
+  clearAll();
+
+  try {
+    ggb.evalCommand(`f(x) = ${newExpr}`);
+    ggb.setColor('f', 37, 99, 235);
+    ggb.setLineThickness('f', 4);
+    ggb.setLineStyle('f', 0);
+    ggb.setVisible('f', true);
+  } catch (e) {
+    showToast('خطا: ' + e.message);
+    return;
+  }
+
+  state.fExpr = newExpr;
+  state.hasFunction = true;
+  state.selectedTarget = 'f';
+
+  exitCombineMode(true);
+  updateFormulaLabel();
+  showToast(`تابع حاصل رسم شد: f(x) = ${newExpr}`);
+}
+
+/* ============================================================
+   اعمال انتقال (روی هدف انتخاب‌شده در حالت ترکیب یا روی f)
+   ============================================================ */
+function translateExpr(expr, dir, amount) {
+  if (dir === 'up')    return `(${expr}) + (${amount})`;
+  if (dir === 'down')  return `(${expr}) - (${amount})`;
+  if (dir === 'right') return substituteX(expr, `(x - (${amount}))`);
+  if (dir === 'left')  return substituteX(expr, `(x + (${amount}))`);
+  return expr;
+}
+
+function applyTranslation(dir, amount) {
+  const target = state.mode === 'combine' ? state.selectedTarget : 'f';
+  const a = parseFloat(amount);
+  if (isNaN(a)) { showToast('عدد معتبر وارد کنید'); return; }
+
+  const oldExpr = target === 'f' ? state.fExpr : state.gExpr;
+  if (!oldExpr) { showToast('ابتدا تابع را وارد کنید'); return; }
+
+  const newExpr = translateExpr(oldExpr, dir, a);
+
+  if (target === 'f') state.fExpr = newExpr;
+  else state.gExpr = newExpr;
+
+  redrawTarget(target);
+  if (state.mode === 'combine') selectTarget(target);
+  updateFormulaLabel();
+  showToast(`انتقال روی ${target}(x) اعمال شد`);
+}
+
+/* ============================================================
+   قدر مطلق |target(x)|
+   ============================================================ */
+function applyAbsTo(target) {
+  const ggb = window.ggb;
+  const oldExpr = target === 'f' ? state.fExpr : state.gExpr;
+  if (!oldExpr) { showToast('ابتدا تابع را وارد کنید'); return; }
+
+  const newExpr = `abs(${oldExpr})`;
+  const color = target === 'f' ? [37, 99, 235] : [220, 38, 38];
+  const origName = target + '_orig';
+  const animName = target + '_anim';
+  const sliderName = target + '_s';
+
+  // اورجینال (خط چین قرمز)
+  try { ggb.evalCommand(`Delete[${origName}]`); } catch (e) {}
+  try { ggb.evalCommand(`${origName}(x) = ${oldExpr}`); } catch (e) {}
+  ggb.setColor(origName, 220, 38, 38);
+  ggb.setLineStyle(origName, 3);
+  ggb.setLineThickness(origName, 2);
+  ggb.setVisible(origName, true);
+
+  // نسخه قدر مطلق (مخفی، برای انیمیشن)
+  try { ggb.evalCommand(`Delete[${target}]`); } catch (e) {}
+  try { ggb.evalCommand(`${target}(x) = ${newExpr}`); } catch (e) {}
+  ggb.setColor(target, ...color);
+  const finalThickness = state.mode === 'combine'
+    ? (state.selectedTarget === target ? 6 : 3)
+    : 4;
+  ggb.setLineThickness(target, finalThickness);
+  ggb.setVisible(target, false);
+
+  // انیمیشن
+  try { ggb.evalCommand(`Delete[${sliderName}]`); } catch (e) {}
+  try { ggb.evalCommand(`${sliderName} = 0`); } catch (e) {}
+  ggb.setVisible(sliderName, false);
+
+  try { ggb.evalCommand(`Delete[${animName}]`); } catch (e) {}
+  try { ggb.evalCommand(`${animName}(x) = ${sliderName} * ${newExpr}`); } catch (e) {}
+  ggb.setColor(animName, ...color);
+  ggb.setLineThickness(animName, finalThickness);
+  ggb.setVisible(animName, true);
+
+  animateValue(sliderName, 0, 1, 900, () => {
+    try {
+      ggb.setVisible(animName, false);
+      ggb.setVisible(target, true);
+    } catch (e) {}
+  });
+
+  if (target === 'f') state.fExpr = newExpr;
+  else state.gExpr = newExpr;
+
+  updateFormulaLabel();
+  showToast(`قدر مطلق ${target}(x) اعمال شد`);
+}
+
+/* ============================================================
+   f(|x|) روی هدف انتخاب‌شده
+   ============================================================ */
+function applyFAbsXTo(target) {
+  const ggb = window.ggb;
+  const oldExpr = target === 'f' ? state.fExpr : state.gExpr;
+  if (!oldExpr) { showToast('ابتدا تابع را وارد کنید'); return; }
+
+  const newExpr = substituteX(oldExpr, 'abs(x)');
+  const color = target === 'f' ? [37, 99, 235] : [220, 38, 38];
+  const origName = target + '_orig';
+  const animName = target + '_anim';
+  const sliderName = target + '_s';
+
+  // اورجینال قرمز خط‌چین
+  try { ggb.evalCommand(`Delete[${origName}]`); } catch (e) {}
+  try { ggb.evalCommand(`${origName}(x) = ${oldExpr}`); } catch (e) {}
+  ggb.setColor(origName, 220, 38, 38);
+  ggb.setLineStyle(origName, 3);
+  ggb.setLineThickness(origName, 2);
+  ggb.setVisible(origName, true);
+
+  // نسخه جدید (مخفی)
+  try { ggb.evalCommand(`Delete[${target}]`); } catch (e) {}
+  try { ggb.evalCommand(`${target}(x) = ${newExpr}`); } catch (e) {}
+  ggb.setColor(target, ...color);
+  const finalThickness = state.mode === 'combine'
+    ? (state.selectedTarget === target ? 6 : 3)
+    : 4;
+  ggb.setLineThickness(target, finalThickness);
+  ggb.setVisible(target, false);
+
+  // انیمیشن
+  try { ggb.evalCommand(`Delete[${sliderName}]`); } catch (e) {}
+  try { ggb.evalCommand(`${sliderName} = 0`); } catch (e) {}
+  ggb.setVisible(sliderName, false);
+
+  try { ggb.evalCommand(`Delete[${animName}]`); } catch (e) {}
+  try { ggb.evalCommand(`${animName}(x) = ${sliderName} * (${newExpr})`); } catch (e) {}
+  ggb.setColor(animName, ...color);
+  ggb.setLineThickness(animName, finalThickness);
+  ggb.setVisible(animName, true);
+
+  animateValue(sliderName, 0, 1, 1000, () => {
+    try {
+      ggb.setVisible(animName, false);
+      ggb.setVisible(target, true);
+    } catch (e) {}
+  });
+
+  if (target === 'f') state.fExpr = newExpr;
+  else state.gExpr = newExpr;
+
+  updateFormulaLabel();
+  showToast(`f(|x|) روی ${target}(x) اعمال شد`);
+}
+
+/* ============================================================
+   مودال عدد
+   ============================================================ */
+let numModalCallback = null;
+function openNumberModal(title, defVal, cb) {
+  document.getElementById('numModalTitle').textContent = title;
+  document.getElementById('numModalInput').value = defVal;
+  document.getElementById('numModal').classList.add('show');
+  setTimeout(() => {
+    const inp = document.getElementById('numModalInput');
+    inp.focus(); inp.select();
+  }, 120);
+  numModalCallback = cb;
+}
+function closeNumberModal() {
+  document.getElementById('numModal').classList.remove('show');
+  numModalCallback = null;
+}
+
+/* ============================================================
+   رویدادها
+   ============================================================ */
+function bindEvents() {
+  // btnPlot
+  document.getElementById('btnPlot').addEventListener('click', () => {
+    const v = readMath(document.getElementById('mathInput'));
+    if (!v) { showToast('لطفاً ضابطه را وارد کنید'); return; }
+    plotFunction(v);
+  });
+
+  document.getElementById('mathInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const v = readMath(document.getElementById('mathInput'));
+      if (v) plotFunction(v);
+    }
+  });
+
+  // drawer f
+  document.getElementById('drawerToggle').addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('drawer').classList.toggle('open');
+    document.getElementById('gDrawer').classList.remove('open');
+  });
+
+  // drawer g
+  document.getElementById('gDrawerToggle').addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('gDrawer').classList.toggle('open');
+    document.getElementById('drawer').classList.remove('open');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!document.getElementById('inputPanel').contains(e.target)) {
+      document.getElementById('drawer').classList.remove('open');
+    }
+    if (!document.getElementById('combinePanel').contains(e.target)) {
+      document.getElementById('gDrawer').classList.remove('open');
+    }
+  });
+
+  // قدر مطلق‌ها
+  document.getElementById('btnAbsF').addEventListener('click', () => {
+    if (!state.hasFunction) { showToast('ابتدا یک تابع رسم کنید'); return; }
+    const target = state.mode === 'combine' ? state.selectedTarget : 'f';
+    applyAbsTo(target);
+  });
+
+  document.getElementById('btnFAbsX').addEventListener('click', () => {
+    if (!state.hasFunction) { showToast('ابتدا یک تابع رسم کنید'); return; }
+    const target = state.mode === 'combine' ? state.selectedTarget : 'f';
+    applyFAbsXTo(target);
+  });
+
+  // جمع/تفریق
+  document.getElementById('btnPlus').addEventListener('click', () => startCombine('plus'));
+  document.getElementById('btnMinus').addEventListener('click', () => startCombine('minus'));
+
+  // فلش‌ها
+  document.querySelectorAll('.dpad button[data-dir]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dir = btn.dataset.dir;
+      openNumberModal('میزان انتقال؟', '1', (val) => {
+        if (val === '' || isNaN(parseFloat(val))) {
+          showToast('عدد معتبر وارد کنید');
+          return;
+        }
+        applyTranslation(dir, val);
+      });
+    });
+  });
+
+  // مودال عدد
+  document.getElementById('numModalConfirm').addEventListener('click', () => {
+    if (numModalCallback) numModalCallback(document.getElementById('numModalInput').value);
+    closeNumberModal();
+  });
+  document.getElementById('numModalCancel').addEventListener('click', closeNumberModal);
+  document.getElementById('numModalInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('numModalConfirm').click(); }
+  });
+
+  // target selectors
+  document.querySelectorAll('.btn-target').forEach(b => {
+    b.addEventListener('click', () => selectTarget(b.dataset.target));
+  });
+
+  // combine cancel/confirm
+  document.getElementById('combineCancel').addEventListener('click', cancelCombine);
+  document.getElementById('combineConfirm').addEventListener('click', confirmCombine);
+
+  // g input live update
+  const gInp = document.getElementById('gMathInput');
+  let gLiveTimer = null;
+  gInp.addEventListener('input', () => {
+    if (state.mode !== 'combine') return;
+    clearTimeout(gLiveTimer);
+    gLiveTimer = setTimeout(() => {
+      const v = readMath(gInp);
+      try { window.ggb.evalCommand('Delete[g]'); } catch (e) {}
+      if (!v || !v.trim()) {
+        state.gExpr = null;
+        updateFormulaLabel();
+        return;
+      }
+      try {
+        window.ggb.evalCommand(`g(x) = ${v}`);
+        window.ggb.setColor('g', 220, 38, 38);
+        const thickness = state.selectedTarget === 'g' ? 6 : 3;
+        window.ggb.setLineThickness('g', thickness);
+        window.ggb.setLineStyle('g', 0);
+        window.ggb.setVisible('g', true);
+        state.gExpr = v;
+        updateFormulaLabel();
+      } catch (e) {
+        // عبارت ناقص — نادیده بگیر
+      }
+    }, 200);
+  });
+
+  // Enter در g input = تأیید
+  gInp.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      confirmCombine();
+    }
+  });
+}
+</script>
+</body>
+</html>
